@@ -2,10 +2,8 @@ const express = require('express');
 const router = express.Router();
 const studentController = require('../controllers/studentController');
 
-// Route to create a new student
-router.post('/', studentController.createStudent);
-
-// Route to get all students
-router.get('/', studentController.getStudents);
+router.get('/', studentController.getAllStudents);
+router.post('/', studentController.addStudent);
+router.put('/:id', studentController.updateStudent);
 
 module.exports = router;

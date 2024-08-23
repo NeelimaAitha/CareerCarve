@@ -1,29 +1,42 @@
 const Student = require('../models/Student');
 
-const createStudent = (req, res) => {
-    const { name, availability, area_of_interest } = req.body;
-    const student = { name, availability, area_of_interest };
+Student.createTable();
 
-    Student.create(student, (err) => {
+const getAllStudents = (req, res) => {
+    Student.getAllStudents((err, students) => {
         if (err) {
-            res.status(500).send("Error creating student");
-        } else {
-            res.status(201).send("Student created successfully");
-        }
-    });
-};
-
-const getStudents = (req, res) => {
-    Student.findAll((err, students) => {
-        if (err) {
-            res.status(500).send("Error retrieving students");
+            res.status(500).json({ error: err.message });
         } else {
             res.json(students);
         }
     });
 };
 
+const addStudent = (req, res) => {
+    const student = req.body;
+    Student.addStudent(student, (err, id) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+        } else {
+            res.json({ id });
+        }
+    });
+};
+
+const updateStudent = (req, res) => {
+    const { id } = req.params;
+    const student = req.body;
+    Student.updateStudent(id, student, (err) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+        } else {
+            res.json({ message: 'Student updated successfully' });
+        }
+    });
+};
+
 module.exports = {
-    createStudent,
-    getStudents
+    getAllStudents,
+    addStudent,
+    updateStudent
 };

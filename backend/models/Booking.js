@@ -1,37 +1,57 @@
 const db = require('../config/db');
 
-const Booking = {
-    createTable: () => {
-        const sql = `
-            CREATE TABLE IF NOT EXISTS bookings (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                mentor_id INTEGER,
-                student_id INTEGER,
-                start_time TEXT,
-                duration INTEGER,
-                FOREIGN KEY (mentor_id) REFERENCES mentors(id),
-                FOREIGN KEY (student_id) REFERENCES students(id)
-            )
-        `;
-        return db.run(sql);
-    },
-
-    create: (booking, callback) => {
-        const { mentor_id, student_id, start_time, duration } = booking;
-        return db.run(
-            `INSERT INTO bookings (mentor_id, student_id, start_time, duration) VALUES (?, ?, ?, ?)`,
-            [mentor_id, student_id, start_time, duration],
-            callback
-        );
-    },
-
-    findAllByMentor: (mentor_id, callback) => {
-        return db.all(`SELECT * FROM bookings WHERE mentor_id = ?`, [mentor_id], callback);
-    },
-
-    findAllByStudent: (student_id, callback) => {
-        return db.all(`SELECT * FROM bookings WHERE student_id = ?`, [student_id], callback);
-    }
+const createTable = () => {
+    db.run(`
+        CREATE TABLE IF NOT EXISTS booking (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            student_id INTEGER,
+            mentor_id INTEGER,
+            duration INTEGER,
+            timestamp TEXT,
+            FOREIGN KEY(student_id) REFERENCES students(id),
+            FOREIGN KEY(mentor_id) REFERENCES mentors(id)
+        )
+    `);
 };
 
-module.exports = Booking;
+const getAllBookings = (callback) => {
+    const query = `
+        SELECT booking.id, students.name AS student_name, mentors.name AS mentor_name, booking.duration, booking.timestamp
+        FROM booking
+        JOIN students ON booking.student_id = students.id
+        JOIN mentors ON booking.mentor_id = mentors.id
+    `;
+    db.all(query, [], callback);
+};
+
+const addBooking = (booking, callback) => {
+    const query = `INSERT INTO booking (student_id, mentor_id, duration, timestamp) VALUES (?, ?, ?, ?)`;
+    const { student_id, mentor_id, duration, timestamp } = booking;
+    db.run(query, [student_id, mentor_id, duration, timestamp], function (err) {
+        callback(err, this ? this.lastID : null);
+    });
+};
+
+const getBookingById = (id, callback) => {
+    const query = `
+        SELECT booking.id, students.name AS student_name, mentors.name AS mentor_name, booking.duration, booking.timestamp
+        FROM booking
+        JOIN students ON booking.student_id = students.id
+        JOIN mentors ON booking.mentor_id = mentors.id
+        WHERE booking.id = ?
+    `;
+    db.get(query, [id], callback);
+};
+
+const deleteBooking = (id, callback) => {
+    const query = `DELETE FROM booking WHERE id = ?`;
+    db.run(query, [id], callback);
+};
+
+module.exports = {
+    createTable,
+    getAllBookings,
+    addBooking,
+    getBookingById,
+    deleteBooking
+};

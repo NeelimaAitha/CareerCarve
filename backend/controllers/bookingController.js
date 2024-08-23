@@ -1,28 +1,57 @@
-const Booking = require('../models/Booking');
+const bookingModel = require('../models/Booking');
 
-const createBooking = (req, res) => {
-    const booking = req.body;
-    Booking.create(booking, (err) => {
+// Get all bookings
+const getAllBookings = (req, res) => {
+    bookingModel.getAllBookings((err, bookings) => {
         if (err) {
-            res.status(500).send("Error creating booking");
-        } else {
-            res.status(201).send("Booking created successfully");
-        }
-    });
-};
-
-const getBookingsByMentor = (req, res) => {
-    const mentor_id = req.params.mentor_id;
-    Booking.findAllByMentor(mentor_id, (err, bookings) => {
-        if (err) {
-            res.status(500).send("Error retrieving bookings");
+            res.status(500).json({ error: err.message });
         } else {
             res.json(bookings);
         }
     });
 };
 
+// Create a new booking
+const addBooking = (req, res) => {
+    const booking = req.body;
+    bookingModel.addBooking(booking, (err, id) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+        } else {
+            res.status(201).json({ id });
+        }
+    });
+};
+
+// Get a booking by ID
+const getBookingById = (req, res) => {
+    const { id } = req.params;
+    bookingModel.getBookingById(id, (err, booking) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+        } else if (booking) {
+            res.json(booking);
+        } else {
+            res.status(404).json({ message: 'Booking not found' });
+        }
+    });
+};
+
+// Delete a booking by ID
+const deleteBooking = (req, res) => {
+    const { id } = req.params;
+    bookingModel.deleteBooking(id, (err) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+        } else {
+            res.status(204).end();
+        }
+    });
+};
+
 module.exports = {
-    createBooking,
-    getBookingsByMentor
+    getAllBookings,
+    addBooking,
+    getBookingById,
+    deleteBooking
 };

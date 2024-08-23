@@ -1,27 +1,42 @@
 const Mentor = require('../models/Mentor');
 
-const getMentors = (req, res) => {
-    Mentor.findAll((err, mentors) => {
+Mentor.createTable();
+
+const getAllMentors = (req, res) => {
+    Mentor.getAllMentors((err, mentors) => {
         if (err) {
-            res.status(500).send("Error retrieving mentors");
+            res.status(500).json({ error: err.message });
         } else {
             res.json(mentors);
         }
     });
 };
 
-const getMentorsByExpertise = (req, res) => {
-    const expertise = req.params.expertise;
-    Mentor.findByExpertise(expertise, (err, mentors) => {
+const addMentor = (req, res) => {
+    const mentor = req.body;
+    Mentor.addMentor(mentor, (err, id) => {
         if (err) {
-            res.status(500).send("Error retrieving mentors");
+            res.status(500).json({ error: err.message });
         } else {
-            res.json(mentors);
+            res.json({ id });
+        }
+    });
+};
+
+const updateMentor = (req, res) => {
+    const { id } = req.params;
+    const mentor = req.body;
+    Mentor.updateMentor(id, mentor, (err) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+        } else {
+            res.json({ message: 'Mentor updated successfully' });
         }
     });
 };
 
 module.exports = {
-    getMentors,
-    getMentorsByExpertise
+    getAllMentors,
+    addMentor,
+    updateMentor
 };
